@@ -1,0 +1,52 @@
+name: Demostracion de busqueda Bash
+on:
+  push:
+    branches: [validar-argumentos]
+    paths:
+      - buscar.sh
+      - .github/workflows/demostracion-bash.yml
+permissions:
+  contents: read
+jobs:
+  demostrar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ejecutar programa y funcion del integrante 2
+        shell: bash
+        run: |
+          set -e
+          mkdir -p /tmp/prueba-busqueda/subcarpeta
+          printf 'hola mundo\nhola hola\n' > /tmp/prueba-busqueda/archivo1.txt
+          printf 'otra linea\nhola mundo\n' > /tmp/prueba-busqueda/subcarpeta/archivo2.txt
+          printf 'sin coincidencias\n' > /tmp/prueba-busqueda/sin-coincidencias.txt
+          printf 'hola\0hola\n' > /tmp/prueba-busqueda/binario.dat
+          echo '=== Programa completo ==='
+          echo '$ bash buscar.sh "hola" /tmp/prueba-busqueda'
+          bash buscar.sh "hola" /tmp/prueba-busqueda > /tmp/salida-programa.txt
+          if [[ -s /tmp/salida-programa.txt ]]; then
+            cat /tmp/salida-programa.txt
+          else
+            echo '(sin salida: recorrer_y_mostrar todavia esta vacia)'
+          fi
+          echo '=== Funcion del integrante 2, aislada ==='
+          # Cargar las funciones sin ejecutar las dos llamadas finales.
+          sed '/^validar_argumentos "\$@"/,$d' buscar.sh > /tmp/funciones-buscar.sh
+          source /tmp/funciones-buscar.sh
+          for archivo in /tmp/prueba-busqueda/archivo1.txt /tmp/prueba-busqueda/subcarpeta/archivo2.txt /tmp/prueba-busqueda/sin-coincidencias.txt /tmp/prueba-busqueda/binario.dat; do
+            veces=$(contar_apariciones "$archivo" "hola")
+            printf '%s: %s\n' "$archivo" "$veces"
+          done
+          [[ "$(contar_apariciones /tmp/prueba-busqueda/archivo1.txt hola)" == 3 ]]
+          [[ "$(contar_apariciones /tmp/prueba-busqueda/subcarpeta/archivo2.txt hola)" == 1 ]]
+          [[ "$(contar_apariciones /tmp/prueba-busqueda/binario.dat hola)" == 0 ]]
+          echo '=== Busqueda de frase ==='
+          veces=$(contar_apariciones /tmp/prueba-busqueda/archivo1.txt "hola mundo")
+          printf '/tmp/prueba-busqueda/archivo1.txt: %s\n' "$veces"
+          [[ "$veces" == 1 ]]
+          {
+            echo '### Programa completo'
+            echo 'El programa termina sin salida: recorrer_y_mostrar sigue vacia.'
+            echo '### Funcion del integrante 2'
+            echo 'Ver el paso de ejecucion para los conteos comprobados (3, 1, 0, 0; frase: 1).'
+          } >> "$GITHUB_STEP_SUMMARY"
