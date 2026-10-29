@@ -25,7 +25,26 @@ validar_argumentos() {
 
 # Integrante 2: $1=archivo $2=palabra. Imprime solo el numero de apariciones.
 contar_apariciones() {
-  :
+  local archivo="$1"
+  local palabra="$2"
+  local coincidencias
+
+  # Omitir archivos inexistentes, ilegibles o una busqueda vacia.
+  if [[ ! -f "$archivo" || ! -r "$archivo" || -z "$palabra" ]]; then
+    printf '0\n'
+    return 0
+  fi
+
+  # -I omite binarios; -o extrae cada coincidencia; -F busca texto literal.
+  coincidencias=$(grep -I -o -F -- "$palabra" "$archivo" 2>/dev/null) \
+    || coincidencias=''
+
+  if [[ -z "$coincidencias" ]]; then
+    printf '0\n'
+  else
+    printf '%s\n' "$coincidencias" | wc -l | tr -d '[:space:]'
+    printf '\n'
+  fi
 }
 
 # Integrante 3: $1=carpeta $2=palabra. Muestra "ruta: veces" si veces > 0.
