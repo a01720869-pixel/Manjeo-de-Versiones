@@ -49,7 +49,17 @@ contar_apariciones() {
 
 # Integrante 3: $1=carpeta $2=palabra. Muestra "ruta: veces" si veces > 0.
 recorrer_y_mostrar() {
-  :
+  local carpeta="$1"
+  local palabra="$2"
+  local archivo veces
+
+  # Separar rutas con NUL permite procesar nombres con espacios.
+  while IFS= read -r -d '' archivo; do
+    veces=$(contar_apariciones "$archivo" "$palabra")
+    if [[ "$veces" -gt 0 ]]; then
+      printf '%s: %s\n' "$archivo" "$veces"
+    fi
+  done < <(find "$carpeta" -type f -print0)
 }
 
 validar_argumentos "$@"

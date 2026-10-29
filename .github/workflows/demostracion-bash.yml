@@ -12,41 +12,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Ejecutar programa y funcion del integrante 2
+      - name: Probar programa completo
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
+          bash -n buscar.sh
           mkdir -p /tmp/prueba-busqueda/subcarpeta
           printf 'hola mundo\nhola hola\n' > /tmp/prueba-busqueda/archivo1.txt
           printf 'otra linea\nhola mundo\n' > /tmp/prueba-busqueda/subcarpeta/archivo2.txt
           printf 'sin coincidencias\n' > /tmp/prueba-busqueda/sin-coincidencias.txt
           printf 'hola\0hola\n' > /tmp/prueba-busqueda/binario.dat
-          echo '=== Programa completo ==='
+          printf 'hola\n' > /tmp/prueba-busqueda/ilegible.txt
+          chmod 000 /tmp/prueba-busqueda/ilegible.txt
           echo '$ bash buscar.sh "hola" /tmp/prueba-busqueda'
-          bash buscar.sh "hola" /tmp/prueba-busqueda > /tmp/salida-programa.txt
-          if [[ -s /tmp/salida-programa.txt ]]; then
-            cat /tmp/salida-programa.txt
-          else
-            echo '(sin salida: recorrer_y_mostrar todavia esta vacia)'
-          fi
-          echo '=== Funcion del integrante 2, aislada ==='
-          # Cargar las funciones sin ejecutar las dos llamadas finales.
-          sed '/^validar_argumentos "\$@"/,$d' buscar.sh > /tmp/funciones-buscar.sh
-          source /tmp/funciones-buscar.sh
-          for archivo in /tmp/prueba-busqueda/archivo1.txt /tmp/prueba-busqueda/subcarpeta/archivo2.txt /tmp/prueba-busqueda/sin-coincidencias.txt /tmp/prueba-busqueda/binario.dat; do
-            veces=$(contar_apariciones "$archivo" "hola")
-            printf '%s: %s\n' "$archivo" "$veces"
+          bash buscar.sh "hola" /tmp/prueba-busqueda | sort | tee /tmp/resultado-palabra.txt
+          printf '/tmp/prueba-busqueda/archivo1.txt: 3\n/tmp/prueba-busqueda/subcarpeta/archivo2.txt: 1\n' > /tmp/esperado.txt
+          diff -u /tmp/esperado.txt /tmp/resultado-palabra.txt
+          echo '$ bash buscar.sh "hola mundo" /tmp/prueba-busqueda'
+          bash buscar.sh "hola mundo" /tmp/prueba-busqueda | sort | tee /tmp/resultado-frase.txt
+          printf '/tmp/prueba-busqueda/archivo1.txt: 1\n/tmp/prueba-busqueda/subcarpeta/archivo2.txt: 1\n' > /tmp/esperado.txt
+          diff -u /tmp/esperado.txt /tmp/resultado-frase.txt
+          [[ -z "$(bash buscar.sh ausente /tmp/prueba-busqueda)" ]]
+          mkdir -p "/tmp/prueba con espacios"
+          printf 'a.b axb a.b\n' > "/tmp/prueba con espacios/archivo con espacios.txt"
+          [[ "$(bash buscar.sh a.b "/tmp/prueba con espacios")" == "/tmp/prueba con espacios/archivo con espacios.txt: 2" ]]
+          for caso in faltan vacia carpeta; do
+            set +e
+            case "$caso" in
+              faltan) bash buscar.sh > /tmp/error-out.txt 2>/tmp/error.txt ;;
+              vacia) bash buscar.sh "" /tmp/prueba-busqueda > /tmp/error-out.txt 2>/tmp/error.txt ;;
+              carpeta) bash buscar.sh hola /tmp/carpeta-inexistente-prueba > /tmp/error-out.txt 2>/tmp/error.txt ;;
+            esac
+            estado=$?
+            set -e
+            [[ "$estado" == 1 && -s /tmp/error.txt && ! -s /tmp/error-out.txt ]]
           done
-          [[ "$(contar_apariciones /tmp/prueba-busqueda/archivo1.txt hola)" == 3 ]]
-          [[ "$(contar_apariciones /tmp/prueba-busqueda/subcarpeta/archivo2.txt hola)" == 1 ]]
-          [[ "$(contar_apariciones /tmp/prueba-busqueda/binario.dat hola)" == 0 ]]
-          echo '=== Busqueda de frase ==='
-          veces=$(contar_apariciones /tmp/prueba-busqueda/archivo1.txt "hola mundo")
-          printf '/tmp/prueba-busqueda/archivo1.txt: %s\n' "$veces"
-          [[ "$veces" == 1 ]]
+          echo 'Todas las comprobaciones pasaron.'
           {
-            echo '### Programa completo'
-            echo 'El programa termina sin salida: recorrer_y_mostrar sigue vacia.'
-            echo '### Funcion del integrante 2'
-            echo 'Ver el paso de ejecucion para los conteos comprobados (3, 1, 0, 0; frase: 1).'
+            echo '### Busqueda de hola'
+            echo '~~~text'
+            cat /tmp/resultado-palabra.txt
+            echo '~~~'
+            echo '### Busqueda de hola mundo'
+            echo '~~~text'
+            cat /tmp/resultado-frase.txt
+            echo '~~~'
+            echo 'Todas las comprobaciones pasaron.'
           } >> "$GITHUB_STEP_SUMMARY"
+          
