@@ -1,62 +1,19 @@
-name: Demostracion de busqueda Bash
+name: Pruebas del buscador Bash
 on:
   push:
-    branches: [validar-argumentos]
+    branches: [actividad-bash-completa]
+  pull_request:
     paths:
-      - buscar.sh
+      - '**.sh'
       - .github/workflows/demostracion-bash.yml
 permissions:
   contents: read
 jobs:
-  demostrar:
+  probar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Probar programa completo
-        shell: bash
-        run: |
-          set -euo pipefail
-          bash -n buscar.sh
-          mkdir -p /tmp/prueba-busqueda/subcarpeta
-          printf 'hola mundo\nhola hola\n' > /tmp/prueba-busqueda/archivo1.txt
-          printf 'otra linea\nhola mundo\n' > /tmp/prueba-busqueda/subcarpeta/archivo2.txt
-          printf 'sin coincidencias\n' > /tmp/prueba-busqueda/sin-coincidencias.txt
-          printf 'hola\0hola\n' > /tmp/prueba-busqueda/binario.dat
-          printf 'hola\n' > /tmp/prueba-busqueda/ilegible.txt
-          chmod 000 /tmp/prueba-busqueda/ilegible.txt
-          echo '$ bash buscar.sh "hola" /tmp/prueba-busqueda'
-          bash buscar.sh "hola" /tmp/prueba-busqueda | sort | tee /tmp/resultado-palabra.txt
-          printf '/tmp/prueba-busqueda/archivo1.txt: 3\n/tmp/prueba-busqueda/subcarpeta/archivo2.txt: 1\n' > /tmp/esperado.txt
-          diff -u /tmp/esperado.txt /tmp/resultado-palabra.txt
-          echo '$ bash buscar.sh "hola mundo" /tmp/prueba-busqueda'
-          bash buscar.sh "hola mundo" /tmp/prueba-busqueda | sort | tee /tmp/resultado-frase.txt
-          printf '/tmp/prueba-busqueda/archivo1.txt: 1\n/tmp/prueba-busqueda/subcarpeta/archivo2.txt: 1\n' > /tmp/esperado.txt
-          diff -u /tmp/esperado.txt /tmp/resultado-frase.txt
-          [[ -z "$(bash buscar.sh ausente /tmp/prueba-busqueda)" ]]
-          mkdir -p "/tmp/prueba con espacios"
-          printf 'a.b axb a.b\n' > "/tmp/prueba con espacios/archivo con espacios.txt"
-          [[ "$(bash buscar.sh a.b "/tmp/prueba con espacios")" == "/tmp/prueba con espacios/archivo con espacios.txt: 2" ]]
-          for caso in faltan vacia carpeta; do
-            set +e
-            case "$caso" in
-              faltan) bash buscar.sh > /tmp/error-out.txt 2>/tmp/error.txt ;;
-              vacia) bash buscar.sh "" /tmp/prueba-busqueda > /tmp/error-out.txt 2>/tmp/error.txt ;;
-              carpeta) bash buscar.sh hola /tmp/carpeta-inexistente-prueba > /tmp/error-out.txt 2>/tmp/error.txt ;;
-            esac
-            estado=$?
-            set -e
-            [[ "$estado" == 1 && -s /tmp/error.txt && ! -s /tmp/error-out.txt ]]
-          done
-          echo 'Todas las comprobaciones pasaron.'
-          {
-            echo '### Busqueda de hola'
-            echo '~~~text'
-            cat /tmp/resultado-palabra.txt
-            echo '~~~'
-            echo '### Busqueda de hola mundo'
-            echo '~~~text'
-            cat /tmp/resultado-frase.txt
-            echo '~~~'
-            echo 'Todas las comprobaciones pasaron.'
-          } >> "$GITHUB_STEP_SUMMARY"
-          
+      - name: Comprobar sintaxis
+        run: bash -n buscar.sh demo.sh pruebas.sh
+      - name: Ejecutar demostracion y pruebas
+        run: bash demo.sh

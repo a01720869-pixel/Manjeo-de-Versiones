@@ -1,0 +1,5 @@
+# Prompt propuesto para el equipo
+
+Genera un programa exclusivamente en Bash llamado buscar.sh, compatible con Bash 3.2 de macOS. Debe recibir exactamente dos argumentos: primero una palabra o frase y segundo la carpeta a analizar. Valida que el texto no esté vacío, no contenga saltos de línea y que la carpeta exista y pueda abrirse. Obtén su ruta absoluta. Recorre recursivamente todos sus archivos con find y admite rutas con espacios. Divide el código en validar_argumentos, contar_apariciones y recorrer_y_mostrar. Cuenta coincidencias literales no superpuestas dentro de cada línea, distinguiendo mayúsculas de minúsculas, con grep -I -F -o. Omite archivos binarios e ilegibles. Muestra únicamente los archivos con coincidencias, en el formato "ruta completa: número de apariciones". Si no hay coincidencias, no imprimas nada. Los errores de argumentos o de recorrido deben producir un mensaje por stderr y código de salida 1. Incluye un README, un ejemplo y pruebas escritas en Bash. Publica la actualización en una rama del repositorio existente.
+
+Este es el prompt propuesto para esta versión de la entrega; no afirma un acuerdo previo de todos los integrantes.

@@ -1,54 +1,50 @@
-# Manjeo-de-Versiones
+# Buscador de palabras y frases en Bash
 
-## Búsqueda de palabras y frases con Bash
+Actividad: IA y bash shell. Actualización del repositorio Manjeo-de-Versiones en la rama `actividad-bash-completa`.
 
-`buscar.sh` recibe dos argumentos: el texto que se busca y la carpeta que se analiza. Recorre sus subcarpetas y muestra únicamente los archivos con coincidencias:
+## Objetivo
 
-```text
-/ruta/completa/archivo.txt: numero_de_apariciones
-```
+Buscar recursivamente una palabra o frase en los archivos de una carpeta. El primer argumento es el texto que se busca y el segundo es la carpeta. La salida muestra la ubicación absoluta de cada archivo con coincidencias y cuántas veces aparece el texto.
 
-### Uso
+## Ejecutar en macOS
 
-Requiere Bash, grep, find, wc y tr (Linux, macOS o Git Bash).
+Abre Terminal y entra al repositorio:
 
 ```bash
-bash buscar.sh "hola" "/ruta/a/la/carpeta"
+cd "$HOME/Manjeo-de-Versiones"
+git switch actividad-bash-completa
+bash buscar.sh "hola" "/ruta/a/tu/carpeta"
 bash buscar.sh "hola mundo" "/ruta/con espacios"
 ```
 
-Usa comillas para las frases y las rutas con espacios. La búsqueda es literal, distingue mayúsculas y minúsculas y cuenta coincidencias no superpuestas dentro de cada línea, incluso dentro de otras palabras. No admite frases que atraviesen saltos de línea. Omite archivos binarios e ilegibles. Si no encuentra coincidencias, no imprime nada.
+Las comillas mantienen las frases y rutas como un único argumento. También puedes escribir `bash buscar.sh "hola" ` y arrastrar una carpeta desde Finder a Terminal antes de presionar Enter.
 
-Argumentos incorrectos, texto vacío o una carpeta inexistente producen un mensaje de error y código de salida 1.
-
-### Funciones
-
-- `validar_argumentos`: verifica los dos argumentos y obtiene la ruta completa.
-- `contar_apariciones`: recibe archivo y texto; imprime el número de coincidencias.
-- `recorrer_y_mostrar`: recorre con find y muestra `ruta: veces` cuando el conteo es mayor que cero. Admite nombres con espacios.
-
-### Prompt propuesto para el equipo
-
-> Genera un script Bash llamado buscar.sh que reciba exactamente dos argumentos: primero una palabra o frase y segundo la carpeta a analizar. Divide el programa en validar_argumentos, contar_apariciones y recorrer_y_mostrar. Valida que el texto no esté vacío y que la carpeta exista; ante errores imprime un mensaje por stderr y termina con exit 1. Convierte la carpeta a una ruta completa. Recorre recursivamente sus archivos con find, admitiendo rutas con espacios. Cuenta todas las coincidencias literales no superpuestas por línea con grep -I -o -F, distinguiendo mayúsculas y minúsculas, y omite binarios e ilegibles. Muestra la ruta completa y el número de apariciones con el formato "ruta: veces", únicamente si es mayor que cero. Incluye comentarios y ejemplos de ejecución.
-
-Este prompt documenta la especificación propuesta para esta entrega; no constituye un registro de un acuerdo previo del equipo.
-
-### Prueba reproducible
+## Demostración reproducible
 
 ```bash
-mkdir -p /tmp/prueba-busqueda/subcarpeta
-printf 'hola mundo\nhola hola\n' > /tmp/prueba-busqueda/archivo1.txt
-printf 'otra linea\nhola mundo\n' > /tmp/prueba-busqueda/subcarpeta/archivo2.txt
-bash buscar.sh "hola" /tmp/prueba-busqueda
+bash demo.sh
 ```
 
-Resultado (el orden puede variar):
+El script crea archivos de ejemplo en una carpeta temporal, ejecuta el mismo `buscar.sh` y elimina únicamente esos datos de demostración al terminar. Muestra búsquedas de palabra y frase con sus rutas completas.
 
-```text
-/tmp/prueba-busqueda/archivo1.txt: 3
-/tmp/prueba-busqueda/subcarpeta/archivo2.txt: 1
+## Pruebas
+
+```bash
+bash -n buscar.sh
+bash pruebas.sh
 ```
 
-El workflow `.github/workflows/demostracion-bash.yml` ejecuta el programa completo y comprueba palabras, frases, subcarpetas, rutas con espacios, texto literal, archivos omitidos y errores de argumentos. Los datos se crean temporalmente en el runner.
+Verifican múltiples apariciones en una línea, frases, subcarpetas, rutas con espacios, caracteres literales, ausencia de coincidencias, archivos binarios e ilegibles, carpeta vacía y errores de argumentos.
 
-Los cambios de esta entrega están en la rama `validar-argumentos`, asociada al PR #1; no se han fusionado a main.
+## Comportamiento
+
+- Escrito en Bash; utiliza las herramientas estándar grep, find, wc, tr y mktemp. No requiere Python ni instalaciones adicionales en macOS.
+- `validar_argumentos` verifica los datos y convierte la carpeta a ruta absoluta.
+- `contar_apariciones` recibe archivo y texto e imprime el conteo.
+- `recorrer_y_mostrar` recorre los archivos y muestra `ruta: veces` solo para conteos mayores que cero.
+- Búsqueda literal y sensible a mayúsculas: `hola` y `Hola` son diferentes.
+- Cuenta coincidencias no superpuestas y también coincidencias dentro de otras palabras. Una frase debe estar contenida en una sola línea.
+- Omite archivos binarios e ilegibles; no sigue enlaces simbólicos a subcarpetas. Si no encuentra coincidencias, no muestra salida.
+- Código de salida 0 cuando termina correctamente, incluso sin coincidencias; 1 ante argumentos inválidos o error de recorrido.
+
+El prompt propuesto está en `PROMPT_EQUIPO.md`. Los archivos Python anteriores se retiraron solo de esta rama y se conservan en el historial de Git.
