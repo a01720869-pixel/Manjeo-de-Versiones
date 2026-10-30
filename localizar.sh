@@ -1,5 +1,5 @@
 #!/bin/bash
-# Uso: bash buscar.sh "palabra o frase" [carpeta]
+# Uso: bash localizar.sh "palabra o frase" [carpeta]
 
 if [[ $# -lt 1 || $# -gt 2 || -z "$1" ]]; then
     printf 'Uso: bash %s "palabra o frase" [carpeta]\n' "$0" >&2

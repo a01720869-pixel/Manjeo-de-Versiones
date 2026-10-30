@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Comprobar sintaxis
-        run: bash -n buscar.sh demo.sh pruebas.sh
+        run: bash -n localizar.sh demo.sh pruebas.sh
       - name: Ejecutar pruebas
         run: bash pruebas.sh
       - name: Mostrar demostracion
