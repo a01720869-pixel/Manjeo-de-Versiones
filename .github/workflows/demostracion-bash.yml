@@ -1,7 +1,7 @@
-name: Pruebas del buscador Bash
+name: Manejo de versiones - Bash sencillo
 on:
   push:
-    branches: [actividad-bash-completa]
+    branches: [manejo-versiones-bash-simple]
   pull_request:
     paths:
       - '**.sh'
@@ -15,5 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Comprobar sintaxis
         run: bash -n buscar.sh demo.sh pruebas.sh
-      - name: Ejecutar demostracion y pruebas
+      - name: Ejecutar pruebas
+        run: bash pruebas.sh
+      - name: Mostrar demostracion
         run: bash demo.sh
